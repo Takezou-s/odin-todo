@@ -1,16 +1,13 @@
-import { Component } from "./Component";
+import { Component } from "./Core/Component";
 
 /**
  * Dummy body component to add Components inside of it.
  */
 export default (() => {
   const node = document.body;
-  const children: Array<Component> = [];
-  const render = () => {
-    children.forEach((x) => {
-      node.appendChild(x.render()!);
-    });
+  const render = (component: Component) => {
+    node.appendChild(component.render());
   };
 
-  return { node, children, render };
+  return { render };
 })();

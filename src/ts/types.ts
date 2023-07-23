@@ -1,4 +1,4 @@
-import { State } from "./Utility/EventManagement/State";
+import { State } from "./Utility/State";
 
 /**
  * Event listener function type.
@@ -28,4 +28,4 @@ export type SetValueFunction = (prevValue: any) => any;
 /**
  * State bind function, for Component.
  */
-export type StateBindFunction = (stateInfo: { state: State; getValue: () => any }) => void;
+export type StateBindFunction = (stateInfo: { state: State; getValue: () => any; getValueT: <T>() => T | null }) => void;

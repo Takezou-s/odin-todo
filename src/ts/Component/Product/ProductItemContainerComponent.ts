@@ -1,4 +1,4 @@
-import { Component } from "../Component";
+import { Component } from "../Core/Component";
 import ProductItemComponent from "./ProductItemComponent";
 
 export default class ProductItemContainerComponent extends Component {
@@ -9,9 +9,9 @@ export default class ProductItemContainerComponent extends Component {
     super(props);
   }
 
-  protected initNode() {
+  protected _initNode() {
     this.node = document.createElement("li");
-    this.node.classList.add("prod-item-container");
+    this._classes.setValue("prod-item-container");
 
     this.headerEl = document.createElement("h1");
     this.headerEl.classList.add("prod-item-container_category");
@@ -22,12 +22,12 @@ export default class ProductItemContainerComponent extends Component {
     this.node.append(this.headerEl, this.productItemsEl);
   }
 
-  protected initStates() {
-    this.bindToState(this.ps.category, ({ getValue }) => {
+  protected _initStates() {
+    this._bindToState(this._ps.category, ({ getValue }) => {
       this.headerEl.textContent = getValue();
     });
 
-    this.bindToState(this.ps.products, ({ getValue }) => {
+    this._bindToState(this._ps.products, ({ getValue }) => {
       this.productItemsEl.innerHTML = "";
 
       const products = getValue();

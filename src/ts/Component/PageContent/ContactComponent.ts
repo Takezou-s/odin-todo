@@ -1,4 +1,4 @@
-import { Component } from "../Component";
+import { Component } from "../Core/Component";
 
 export default class ContactComponent extends Component {
   private phoneEl!: HTMLElement;
@@ -8,9 +8,9 @@ export default class ContactComponent extends Component {
     super(props);
   }
 
-  protected initNode() {
+  protected _initNode() {
     this.node = document.createElement("div");
-    this.node.classList.add("contact");
+    this._classes.setValue("contact");
 
     this.phoneEl = document.createElement("p");
     this.phoneEl.classList.add("contact-phone");
@@ -21,12 +21,12 @@ export default class ContactComponent extends Component {
     this.node.append(this.phoneEl, this.addressEl);
   }
 
-  protected initStates() {
-    this.bindToState(this.ps.phone, ({ getValue }) => {
+  protected _initStates() {
+    this._bindToState(this._ps.phone, ({ getValue }) => {
       this.phoneEl.textContent = "Phone: " + getValue();
     });
 
-    this.bindToState(this.ps.address, ({ getValue }) => {
+    this._bindToState(this._ps.address, ({ getValue }) => {
       this.addressEl.textContent = "Address: " + getValue();
     });
   }

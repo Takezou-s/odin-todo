@@ -1,5 +1,5 @@
 import { Event } from "../../Utility/EventManagement/Event";
-import { Component } from "../Component";
+import { Component } from "../Core/Component";
 
 export default class TabItemComponent extends Component {
   private buttonEl!: HTMLElement;
@@ -10,9 +10,9 @@ export default class TabItemComponent extends Component {
     super(props);
   }
 
-  protected initNode() {
+  protected _initNode() {
     this.node = document.createElement("li");
-    this.node.classList.add("tab-item");
+    this._classes.setValue("tab-item");
 
     this.buttonEl = document.createElement("button");
     this.buttonEl.addEventListener("click", (event) => {
@@ -22,12 +22,12 @@ export default class TabItemComponent extends Component {
     this.node.appendChild(this.buttonEl);
   }
 
-  protected initStates() {
-    this.bindToState(this.ps.text, ({ getValue }) => {
+  protected _initStates() {
+    this._bindToState(this._ps.text, ({ getValue }) => {
       this.buttonEl.textContent = getValue();
     });
 
-    this.bindToState(this.ps.active, ({ getValue }) => {
+    this._bindToState(this._ps.active, ({ getValue }) => {
       const active = getValue();
       if (active) this.node.classList.add("active");
       else this.node.classList.remove("active");

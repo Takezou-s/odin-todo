@@ -1,5 +1,5 @@
 import { Event } from "../../Utility/EventManagement/Event";
-import { Component } from "../Component";
+import { Component } from "../Core/Component";
 import TabItemComponent from "./TabItemComponent";
 
 type Tab = { title: string; active: boolean; content: Component };
@@ -14,9 +14,9 @@ export default class TabContainerComponent extends Component {
     super(props);
   }
 
-  protected initNode() {
+  protected _initNode() {
     this.node = document.createElement("div");
-    this.node.classList.add("tab-container");
+    this._classes.setValue("tab-container");
 
     this.titleEl = document.createElement("h1");
     this.titleEl.classList.add("brand");
@@ -27,11 +27,11 @@ export default class TabContainerComponent extends Component {
     this.node.append(this.titleEl, this.tabContainerEl);
   }
 
-  protected initStates() {
-    this.bindToState(this.ps.title, ({ getValue }) => {
+  protected _initStates() {
+    this._bindToState(this._ps.title, ({ getValue }) => {
       this.titleEl!.textContent = getValue();
     });
-    this.bindToState(this.ps.tabs, ({ getValue }) => {
+    this._bindToState(this._ps.tabs, ({ getValue }) => {
       this._createTabItems(getValue());
       this.tabContainerEl!.innerHTML = "";
       this._tabContentPair.forEach((x) => {

@@ -1,4 +1,4 @@
-import { Component } from "../Component";
+import { Component } from "../Core/Component";
 
 export default class ProductItemComponent extends Component {
   private imgEl!: HTMLElement;
@@ -11,9 +11,9 @@ export default class ProductItemComponent extends Component {
     super(props);
   }
 
-  protected initNode() {
+  protected _initNode() {
     this.node = document.createElement("li");
-    this.node.classList.add("prod-item");
+    this._classes.setValue("prod-item");
 
     this.imgEl = document.createElement("img");
     this.imgEl.classList.add("prod-item-img");
@@ -34,20 +34,20 @@ export default class ProductItemComponent extends Component {
     this.node.append(this.imgEl, this.headerEl, this.descriptionEl);
   }
 
-  protected initStates() {
-    this.bindToState(this.ps.image, ({ getValue }) => {
+  protected _initStates() {
+    this._bindToState(this._ps.image, ({ getValue }) => {
       this.imgEl.setAttribute("src", getValue());
     });
 
-    this.bindToState(this.ps.title, ({ getValue }) => {
+    this._bindToState(this._ps.title, ({ getValue }) => {
       this.header_titleEl.textContent = getValue();
     });
 
-    this.bindToState(this.ps.price, ({ getValue }) => {
+    this._bindToState(this._ps.price, ({ getValue }) => {
       this.header_priceEl.textContent = "$" + getValue();
     });
 
-    this.bindToState(this.ps.description, ({ getValue }) => {
+    this._bindToState(this._ps.description, ({ getValue }) => {
       this.descriptionEl.textContent = getValue();
     });
   }

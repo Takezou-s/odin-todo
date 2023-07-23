@@ -1,8 +1,8 @@
-import * as types from "../../types";
-import { ChangeNotifierProperty } from "./ChangeNotifierProperty";
-import { Event } from "./Event";
-import { PropertyChangedEvent } from "./PropertyChangedEvent";
-import { PropertyChangedListener } from "./PropertyChangedListener";
+import * as types from "../types";
+import { ChangeNotifierProperty } from "./EventManagement/ChangeNotifierProperty";
+import { Event } from "./EventManagement/Event";
+import { PropertyChangedEvent } from "./EventManagement/PropertyChangedEvent";
+import { PropertyChangedListener } from "./EventManagement/PropertyChangedListener";
 
 export class StateStore {
   private _owner: any;
@@ -25,7 +25,7 @@ export class StateStore {
    */
   createState = (
     stateName: string,
-    initialValue: any | types.SetValueFunction,
+    initialValue: any | types.SetValueFunction = null,
     fireAlways: boolean = false,
     changedPredicate: types.NotifierPropertyChangedPredicate | null = null
   ) => {
@@ -105,7 +105,7 @@ export class State {
     owner: any,
     stateName: string,
     notifier: Event | PropertyChangedEvent,
-    initialValue: any | types.SetValueFunction,
+    initialValue: any | types.SetValueFunction = null,
     fireAlways: boolean = false,
     changedPredicate: types.NotifierPropertyChangedPredicate | null = null
   ) {
@@ -122,7 +122,15 @@ export class State {
     return this._property.getValue();
   };
 
+  getValueT = <T>(): T | null => {
+    return this.getValue() as T;
+  };
+
   setValue = (value: any | types.SetValueFunction) => {
     this._property.setValue(value);
+  };
+
+  setValueT = <T>(value: T | ((prevValue: T) => T)) => {
+    this.setValue(value);
   };
 }

@@ -1,3 +1,4 @@
+import { Event } from "../../Utility/EventManagement/Event";
 import { State, StateStore } from "../../Utility/State";
 import * as types from "../../types";
 
@@ -5,7 +6,7 @@ import * as types from "../../types";
  * Component base class. Subclasses should override "initNode" method and set value of "node" property.
  */
 export abstract class Component {
-  private _update = false;
+  protected _update = false;
   /**
    * State binds.
    */
@@ -33,7 +34,15 @@ export abstract class Component {
   /**
    * HTMLElement object to append to document.
    */
-  node!: HTMLElement;
+  _node!: HTMLElement | SVGSVGElement;
+
+  get node(): HTMLElement | SVGSVGElement {
+    return this._node;
+  }
+
+  set node(value: HTMLElement | SVGSVGElement) {
+    this._node = value;
+  }
 
   constructor(props: any | null = null) {
     this._stateStore.subscribeStoreChanged(this._stateChangedHandler);
@@ -71,6 +80,48 @@ export abstract class Component {
     this._initNode();
     this._initStatesWrapper();
   }
+
+  addClass(...classNames: string[]): void {
+    this._classes.setValueT<DOMTokenList>((list) => {
+      classNames.forEach((className) => {
+        const splitted = className.trim().split(" ");
+        splitted.forEach((x) => {
+          if (x && x.length > 0) {
+            list.add(x);
+          }
+        });
+      });
+      return list;
+    });
+  }
+
+  removeClass(...classNames: string[]): void {
+    this._classes.setValueT<DOMTokenList>((list) => {
+      classNames.forEach((className) => {
+        const splitted = className.trim().split(" ");
+        splitted.forEach((x) => {
+          if (x && x.length > 0) {
+            list.remove(x);
+          }
+        });
+      });
+      return list;
+    });
+  }
+
+  toggleClass(...classNames: string[]): void {
+    this._classes.setValueT<DOMTokenList>((list) => {
+      classNames.forEach((className) => {
+        const splitted = className.trim().split(" ");
+        splitted.forEach((x) => {
+          if (x && x.length > 0) {
+            list.toggle(x);
+          }
+        });
+      });
+      return list;
+    });
+  }
   /**
    * Node creation and element appendings are made in this method.
    */
@@ -82,7 +133,16 @@ export abstract class Component {
     const setClassName = (internal?: string, external?: string) => {
       const className = (internal?.trim() + " " + external?.trim()).trim();
       if (className && className.length > 0) {
-        this.node.className = className;
+        if (this.node.nodeName === "svg") {
+          let str: any = this.node.classList.value;
+          str = str.trim().split(" ");
+          (str as string[]).forEach((x) => this.node.classList.remove(x));
+
+          str = className.split(" ");
+          (str as string[]).forEach((x) => this.node.classList.add(x));
+        } else {
+          (this.node as HTMLElement).className = className;
+        }
       }
     };
 

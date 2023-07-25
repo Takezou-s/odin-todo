@@ -32,7 +32,13 @@ export class ChangeNotifierProperty {
         this._fireChanged();
         return;
       }
-      value = valueOrFn(this._value);
+      const fnResult = valueOrFn(this._value);
+      if (fnResult !== undefined) {
+        value = fnResult;
+      } else {
+        this._fireChanged();
+        return;
+      }
     }
     let changed = (this.changedPredicate || (() => this._value !== value))(this._value, value);
 
@@ -50,7 +56,12 @@ export class ChangeNotifierProperty {
         this._value.fn = valueOrFn;
         return;
       }
-      value = valueOrFn(this._value);
+      const fnResult = valueOrFn(this._value);
+      if (fnResult !== undefined) {
+        value = fnResult;
+      } else {
+        return;
+      }
     }
     this._value = value;
   };

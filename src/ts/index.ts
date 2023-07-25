@@ -1,43 +1,89 @@
 import "../scss/styles.scss";
-import * as bootstrap from "bootstrap";
-import BodyComponent from "./Component/BodyComponent";
-import PageComponent from "./Component/PageComponent";
-import { ContainerComponent } from "./Component/Core/ContainerComponent";
-import { Comp1, Comp2 } from "./Component/Comp1";
-import { RadioTabItemComponent } from "./Component/RadioTabItemComponent";
-import GlobalStateStore from "./Utility/GlobalStateStore";
-import { CollapseComponent } from "./Component/CollapseComponent";
+import * as icons from "@mdi/js";
 
-// BodyComponent.render(new PageComponent());
-// const button1 = new Comp1({ stateName: "num1", stateName2: "num2", styles: { padding: "16px" } });
-// const button2 = new Comp1({ stateName2: "num1", stateName: "num2", styles: { padding: "16px" } });
-// const container = new ContainerComponent({ nodeType: "div", children: [button1, button2] });
-// BodyComponent.render(container);
-const radioClicked = (radioTab: RadioTabItemComponent) => {
-  GlobalStateStore.activeRadioTab.setValue(radioTab);
+import BodyComponent from "./Component/Body";
+import { Container } from "./Component/Core/Container";
+import { TodoCategoryButton } from "./Component/TodoCategoryButton";
+import GlobalStateStore from "./Utility/GlobalStateStore";
+import { ComponentFromElement } from "./Component/Core/ComponentFromElement";
+import { TodoItem } from "./Component/TodoItem";
+import { Icon } from "./Component/Svg";
+
+const radioClicked = (radioTab: TodoCategoryButton) => {
+  GlobalStateStore.todoCategory.setValue(radioTab);
 };
-const radioTab1 = new RadioTabItemComponent({
-  text: "Tab - 1",
-  activeClassName: "active",
+const radioTab1 = new TodoCategoryButton({
+  text: "Todayyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
+  todoCount: 999,
   onClick: radioClicked,
-  classes: "btn btn-dark",
 });
-const radioTab2 = new RadioTabItemComponent({
-  text: "Tab - 2",
-  activeClassName: "active",
+const radioTab2 = new TodoCategoryButton({
+  text: "Approaching",
+  todoCount: 1,
   onClick: radioClicked,
-  classes: "btn btn-dark",
 });
-const sideBar = new ContainerComponent({ nodeType: "aside", children: [radioTab1, radioTab2], classes: "col-3 border border-dark" });
-const main = new ContainerComponent({
+const radioTab3 = new TodoCategoryButton({
+  text: "Past",
+  todoCount: 99,
+  onClick: radioClicked,
+});
+const radioTab4 = new TodoCategoryButton({
+  text: "Notes",
+  todoCount: 100,
+  onClick: radioClicked,
+  classes: "text-truncate btn btn-lg text-start btn-outline-dark border-start-0 border-end-0 rounded-0",
+});
+const sideBar = new Container({
+  nodeType: "aside",
+  children: [
+    radioTab1,
+    radioTab2,
+    radioTab3,
+    new ComponentFromElement(
+      "h1",
+      [
+        {
+          propName: "title",
+          fn(comp) {
+            return ({ getValue }) => {
+              comp.node.textContent = getValue();
+            };
+          },
+        },
+      ],
+      { title: "Projects" }
+    ),
+    radioTab4,
+  ],
+  classes: "col-3 border border-dark px-0 py-3 d-flex flex-column gap-2",
+});
+const main = new Container({
   nodeType: "main",
   classes: "row m-0 p-0 col-9 border border-dark",
 });
-const container = new ContainerComponent({
+const container = new Container({
   nodeType: "div",
   children: [sideBar, main],
   classes: "row vw-100 vh-100 m-0 border border-dark",
 });
-BodyComponent.render(new Comp2());
-BodyComponent.render(container);
-main.props.children = new CollapseComponent();
+// BodyComponent.render(container);
+// main.addChildren(new TodoItem());
+document.body.style.fontSize = "64px";
+// const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+// SVGSVGElement;
+// svg.setAttributeNS(null, "viewBox", "0 0 24 24");
+// // svg.setAttributeNS(null, "width", "24");
+// // svg.setAttributeNS(null, "height", "24");
+// svg.setAttributeNS(null, "fill", "currentColor");
+// svg.style.display = "inline-block";
+
+// svg.style.width = "1em";
+// svg.style.height = "1em";
+
+// const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+// path.setAttributeNS(null, "d", icons.mdiChevronLeft);
+// path.setAttributeNS(null, "fill", "currentColor");
+// svg.append(path);
+// document.body.prepend(svg);
+BodyComponent.render(new Icon({ path: icons.mdiChevronLeft }));
+BodyComponent.render(new Icon({ path: icons.mdiChevronDoubleLeft }));

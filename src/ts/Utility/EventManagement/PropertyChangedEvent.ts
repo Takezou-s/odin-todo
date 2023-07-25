@@ -11,7 +11,7 @@ export class PropertyChangedEvent {
   unsubscribe: types.EventSubscribe;
   clearSubscribers: () => void;
 
-  constructor(delay: number | null = null, postInvokeFn: EventListener | null) {
+  constructor(delay: number | null = null, postInvokeFn?: EventListener | null) {
     this._event = new Event(delay, postInvokeFn);
     this.subscribe = this._event.subscribe;
     this.unsubscribe = this._event.unsubscribe;

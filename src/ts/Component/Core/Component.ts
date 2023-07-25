@@ -136,10 +136,14 @@ export abstract class Component {
         if (this.node.nodeName === "svg") {
           let str: any = this.node.classList.value;
           str = str.trim().split(" ");
-          (str as string[]).forEach((x) => this.node.classList.remove(x));
+          (str as string[]).forEach((x) => {
+            if (x) this.node.classList.remove(x);
+          });
 
           str = className.split(" ");
-          (str as string[]).forEach((x) => this.node.classList.add(x));
+          (str as string[]).forEach((x) => {
+            if (x) this.node.classList.add(x);
+          });
         } else {
           (this.node as HTMLElement).className = className;
         }
@@ -192,8 +196,11 @@ export abstract class Component {
    * Subscribe an external state store changes, for global state management.
    * @param store State store to listen to.
    */
-  protected _listenStateStore(store: StateStore) {
+  protected _subscribeStateStore(store: StateStore) {
     store.subscribeStoreChanged(this._stateChangedHandler);
+  }
+  protected _unsubscribeStateStore(store: StateStore) {
+    store.unsubscribeStoreChanged(this._stateChangedHandler);
   }
   /**
    * Creates state to use inside the component.

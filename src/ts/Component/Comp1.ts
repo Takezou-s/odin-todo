@@ -16,7 +16,7 @@ export class Comp1 extends Component {
   }
 
   protected _initStates(): void {
-    this._listenStateStore(GlobalStateStore);
+    this._subscribeStateStore(GlobalStateStore);
     this._bindToState((GlobalStateStore as any)[this.props.stateName] as State, ({ getValue }) => {
       this.node.textContent = getValue();
     });

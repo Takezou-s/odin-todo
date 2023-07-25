@@ -34,7 +34,7 @@ export class TodoCategoryButton extends Component {
   }
 
   protected _initStates(): void {
-    this._listenStateStore(GlobalStateStore);
+    this._subscribeStateStore(GlobalStateStore);
 
     this._bindToState(GlobalStateStore.todoCategory, ({ getValue }) => {
       if (this === getValue()) {

@@ -3,16 +3,18 @@ import { Component } from "./Component";
 export class Container extends Component {
   protected _appended: Array<Component | HTMLElement> = [];
 
-  constructor(props: {
-    nodeType: string;
+  constructor(props?: {
+    nodeType?: string;
     children?: Array<Component> | Array<HTMLElement> | Component | HTMLElement;
     styles?: any;
     classes?: string;
   }) {
+    props = props || {};
+    props.nodeType = props.nodeType || "div";
     super(props);
   }
 
-  addChildren(component: Array<Component> | Array<HTMLElement> | Component | HTMLElement) {
+  addChildren(component: Array<Component | HTMLElement> | Component | HTMLElement) {
     this.setPropValue("children", (list: any[]) => {
       if (Array.isArray(component)) {
         list.push(...component);

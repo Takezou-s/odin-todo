@@ -32,7 +32,7 @@ export class TodoItem extends Component {
     this.node.style.overflowWrap = "anywhere";
 
     this._header = new Container();
-    this._header.addClass("d-flex align-items-center gap-2 fs-4 fw-semibold");
+    this._header.addClass("d-flex align-items-center gap-2 fs-6 fw-semibold");
 
     this._statusIconContainer = document.createElement("div");
     this._statusIconContainer.className = " rounded-circle d-flex justify-content-center align-items-center";
@@ -62,22 +62,21 @@ export class TodoItem extends Component {
 
     this._priorityEl = document.createElement("span");
     this._priorityEl.textContent = "High";
-    this._priorityEl.className = "px-3 py-2 rounded-pill";
+    this._priorityEl.className = "px-3 py-1 rounded-pill";
 
     this._dueStatusEl = document.createElement("span");
     this._dueStatusEl.textContent = "Close";
-    this._dueStatusEl.className = "px-3 py-2 rounded-pill";
+    this._dueStatusEl.className = "px-3 py-1 rounded-pill";
 
     this._tagContainer.addChildren([this._priorityEl, this._dueStatusEl]);
 
     this._dateContainer = new Container();
-    this._dateContainer.addClass("d-flex align-items-center gap-2 fs-5");
+    this._dateContainer.addClass("d-flex align-items-center gap-2 fs-6 text-success fw-light");
 
-    this._dateIcon = new Icon({ viewBox: "0 0 24 24", path: icons.mdiCalendar });
+    this._dateIcon = new Icon({ viewBox: "0 0 24 24", path: icons.mdiCalendar, classes: "fs-5" });
     this._dateIcon.center();
     this._dateText = document.createElement("span");
     this._dateText.textContent = "25.07.2023";
-    this._dateText.style.marginBottom = "2px";
     this._dateContainer.addChildren([this._dateIcon, this._dateText]);
 
     this.node.append(this._header.render(), this._descEl, this._tagContainer.render(), this._dateContainer.render());

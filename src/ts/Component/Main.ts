@@ -1,4 +1,5 @@
 import * as dateHelper from "date-fns";
+import * as icons from "@mdi/js";
 
 import { ProjectType } from "../Entity/ProjectType";
 import { Todo } from "../Entity/Todo";
@@ -6,13 +7,27 @@ import { TodoProject } from "../Entity/TodoProject";
 import GlobalStateStore from "../Utility/GlobalStateStore";
 import { Container } from "./Core/Container";
 import { TodoItem } from "./TodoItem";
+import { DueStatus } from "../Entity/DueStatus";
+import { IconButton } from "./AddButton";
+import { Note } from "../Entity/Note";
+import { ComponentFromString } from "./Core/ComponentFromString";
+import { Component } from "./Core/Component";
 
 export class Main extends Container {
+  private _categoryId: any;
+  private _loading?: Component;
   constructor() {
     super({
       nodeType: "main",
-      classes: "row h-100 overflow-auto m-0 col-9 border border-dark d-flex align-items-start justify-content-start",
+      classes:
+        "row h-100 overflow-auto m-0 py-2 col-md-9 col-12 d-flex align-items-start justify-content-start align-content-start position-relative",
     });
+  }
+
+  refresh() {
+    if (this._categoryId) {
+      this.display(this._categoryId);
+    }
   }
 
   protected _initNode(): void {
@@ -22,36 +37,188 @@ export class Main extends Container {
   protected _initStates(): void {
     this._subscribeStateStore(GlobalStateStore);
     this._bindToState(GlobalStateStore.activeTodoCategory, ({ getValue }) => {
-      const id = getValue();
-      let todos: Array<Todo> | undefined;
-      if (id) {
-        if (id === ProjectType.today) {
-          todos = GlobalStateStore.todos
-            .getValueT<Todo[]>()
-            ?.filter((x) => dateHelper.format(x.date, "dd-MM-yyyy") === dateHelper.format(new Date(), "dd-MM-yyyy"));
-        } else if (id === ProjectType.close) {
-          todos = GlobalStateStore.todos.getValueT<Todo[]>()?.filter((x) => {
-            let result = false;
-            if (x.reminderDay <= 0) return result;
-            const dayDiff = dateHelper.differenceInDays(x.date, new Date());
-            result = dayDiff <= x.reminderDay && dayDiff > 0;
-            return result;
-          });
-        } else if (id === ProjectType.overdue) {
-          todos = GlobalStateStore.todos.getValueT<Todo[]>()?.filter((x) => {
-            const dayDiff = dateHelper.differenceInDays(x.date, new Date());
-            return dayDiff < 0;
-          });
-        } else {
-          todos = GlobalStateStore.todos.getValueT<Todo[]>()?.filter((x) => x.projectId === id);
-        }
-      }
-      this.clearChildren();
-      if (todos && todos.length > 0) {
-        this.addChildren(todos.map<Container>((x) => new Container({ classes: "col-3 p-2", children: new TodoItem({ todo: x }) })));
-      } else {
-        alert("Hiç Todo bulunamadı..." + id);
-      }
+      this.display(getValue());
     });
+
+    this._bindToState(GlobalStateStore.todos, ({ getValueT }) => {
+      this.refresh();
+    });
+  }
+
+  private async display(id: any) {
+    this._categoryId = id;
+    this.showLoading();
+    // await new Promise((resolve, reject) => {
+    //   setTimeout(() => {
+    //     resolve(true);
+    //   }, 3000);
+    // });
+    let todos: Array<Todo> | undefined;
+    let notes: Array<Note> | undefined;
+    let projectName: string | undefined;
+    let desc: string | undefined;
+    let showCreateButton: boolean = false;
+    let note: boolean = false;
+    if (id) {
+      if (id === ProjectType.today) {
+        projectName = ProjectType.today;
+        desc = "What to do today?";
+        todos = GlobalStateStore.todos.getValueT<Todo[]>()?.filter((x) => x.dueStatus === DueStatus.inProgress);
+      } else if (id === ProjectType.close) {
+        projectName = ProjectType.close;
+        desc = "It's close, would be nice to remember.";
+        todos = GlobalStateStore.todos.getValueT<Todo[]>()?.filter((x) => x.dueStatus === DueStatus.close);
+      } else if (id === ProjectType.overdue) {
+        projectName = ProjectType.overdue;
+        desc = "It's late, no need to panic.";
+        todos = GlobalStateStore.todos.getValueT<Todo[]>()?.filter((x) => x.dueStatus === DueStatus.overdue);
+      } else if (id === "Notes") {
+        projectName = "Notes";
+        desc = "Standalone notes here.";
+        showCreateButton = true;
+        note = true;
+        notes = GlobalStateStore.notes.getValueT<Note[]>()?.filter((x) => x.todoId === "Notes");
+      } else {
+        const todoProject = GlobalStateStore.todoCategories.getValueT<TodoProject[]>()?.find((x) => x.id === id);
+        projectName = todoProject?.title;
+        desc = todoProject?.description;
+        showCreateButton = true;
+        todos = GlobalStateStore.todos.getValueT<Todo[]>()?.filter((x) => x.projectId === id);
+      }
+    }
+    this.clearChildren();
+    if (projectName) {
+      const container = this.getProjectNameElement(projectName, desc, showCreateButton, id);
+      this.addChildren(container);
+    }
+    let empty: boolean = true;
+    if (!note) {
+      empty = this.addTodoElements(todos);
+    } else {
+      if (notes && notes.length > 0) {
+        empty = false;
+      }
+    }
+
+    if (empty) {
+      this.addEmptyIndicator();
+    }
+    this.hideLoading();
+  }
+
+  private showLoading() {
+    if (!this._loading) {
+      this._loading = new ComponentFromString({
+        htmlString: `
+      <div class="position-absolute top-50 start-50 translate-middle" style="width: max-content">
+        <div class="spinner-border text-info" role="status"></div>
+      </div>
+      `,
+      });
+    }
+    this.node.append(this._loading.render());
+  }
+
+  private hideLoading() {
+    if (this._loading) {
+      this._loading.node.remove();
+    }
+  }
+
+  private addEmptyIndicator() {
+    this.addChildren(
+      new ComponentFromString({
+        htmlString: `
+        <div class="p-2 mt-3">
+          <div class="rounded-3 p-2 shadow">
+            <h1>This looks empty!</h1>
+            <h3>Visit a project to create todos.</h3>
+            <h3>Visit "Notes" section to create standalone notes.</h3>
+          </div>
+        </div>
+        `,
+      })
+    );
+  }
+
+  private addTodoElements(todos: Todo[] | undefined) {
+    let empty = true;
+    if (todos && todos.length > 0) {
+      empty = false;
+      this.addChildren(
+        todos.map<Container>((x) => new Container({ classes: "col-md-6 col-lg-4 col-xxl-3 p-2", children: new TodoItem({ todo: x }) }))
+      );
+    }
+    return empty;
+  }
+
+  private getProjectNameElement(projectName: string, description: string | undefined, showCreateButton: boolean, id: any) {
+    const container = new Container({ classes: "col-12 p-2" });
+    const innerContainer = new Container({ classes: "p-2 shadow rounded-3" });
+    const titleContainer = new Container({ classes: "d-flex align-items-center gap-2 py-2" });
+
+    const title = document.createElement("h3");
+    title.className = "text-truncate m-0";
+    title.title = projectName;
+    title.textContent = projectName;
+
+    titleContainer.addChildren(title);
+    if (showCreateButton) {
+      titleContainer.addChildren(
+        new IconButton({
+          onClick: () => {
+            if (id !== "Notes") {
+              GlobalStateStore.addTodoHandler.getValue()(id);
+            } else {
+              var q = 5;
+            }
+          },
+          icon: icons.mdiPlus,
+          classes: "ms-4",
+        })
+      );
+
+      titleContainer.addChildren(
+        new IconButton({
+          onClick: () => {
+            if (id !== "Notes") {
+              GlobalStateStore.editTodoProjectHandler.getValue()(id);
+            } else {
+              var q = 5;
+            }
+          },
+          icon: icons.mdiBookEdit,
+          classes: "btn-success",
+          fontSize: "1.5rem",
+        })
+      );
+
+      titleContainer.addChildren(
+        new IconButton({
+          onClick: () => {
+            if (id !== "Notes") {
+              GlobalStateStore.deleteTodoProjectHandler.getValue()(id);
+            } else {
+              var q = 5;
+            }
+          },
+          icon: icons.mdiDelete,
+          classes: "btn-danger",
+          fontSize: "1.5rem",
+        })
+      );
+    }
+    innerContainer.addChildren(titleContainer);
+
+    if (description) {
+      const desc = document.createElement("p");
+      desc.className = "my-2 fs-4";
+      desc.textContent = description;
+      innerContainer.addChildren(desc);
+      titleContainer.addClass("border-bottom");
+    }
+
+    container.addChildren(innerContainer);
+    return container;
   }
 }

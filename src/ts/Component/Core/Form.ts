@@ -13,4 +13,11 @@ export abstract class Form extends Component {
     const formData = new FormData(this.node as HTMLFormElement);
     return Object.fromEntries(formData);
   }
+
+  setInputValue(selector: string, value: any) {
+    const inputElement = this.node.querySelector(selector) as HTMLInputElement;
+    if (inputElement) {
+      inputElement.value = value;
+    }
+  }
 }

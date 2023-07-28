@@ -1,13 +1,17 @@
+import { ProjectType } from "../Entity/ProjectType";
+import { TodoProject } from "../Entity/TodoProject";
 import { Form } from "./Core/Form";
 
 export class TodoProjectForm extends Form {
   constructor(props?: {
     onSubmit?: (args: { form: TodoProjectForm; formProps: any; event: any }) => void;
     onReset?: (args: { form: TodoProjectForm; event: any }) => void;
+    todoProject?: TodoProject | null;
   }) {
     props = props || {};
     props.onSubmit = props.onSubmit || ((args: { form: TodoProjectForm; formProps: any; event: any }) => {});
     props.onReset = props.onReset || ((args: { form: TodoProjectForm; event: any }) => {});
+    props.todoProject = props.todoProject || null;
     super(props);
   }
   protected _initNode(): void {
@@ -25,6 +29,13 @@ export class TodoProjectForm extends Form {
     `;
   }
   protected _initStates(): void {
+    this._bindToState(this._ps.todoProject, ({ getValueT }) => {
+      const todoProject = getValueT<TodoProject>();
+      if (todoProject) {
+        this.setInputValue("#title", todoProject.title);
+        this.setInputValue("#description", todoProject.description);
+      }
+    });
     this._bindToState(this._ps.onSubmit, ({ getValueT }) => {
       const fn = getValueT<(args: { form: TodoProjectForm; formProps: any; event: any }) => void>();
       if (fn && typeof fn === "function") {

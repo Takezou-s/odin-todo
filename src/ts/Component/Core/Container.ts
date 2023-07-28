@@ -23,6 +23,7 @@ export class Container extends Component {
         list.push(component);
         this.append(component);
       }
+      return list;
     });
   }
 
@@ -32,7 +33,7 @@ export class Container extends Component {
         const index = list.findIndex((x) => x === item);
         if (index < 0) return;
         list.splice(index, 1);
-        this.node.removeChild(item);
+        this.node.removeChild(item.node ? item.node : item);
       };
 
       if (Array.isArray(component)) {
@@ -42,6 +43,19 @@ export class Container extends Component {
       } else {
         removeItem(component);
       }
+
+      return list;
+    });
+  }
+
+  clearChildren() {
+    this.setPropValue("children", (list: any[]) => {
+      list.forEach((item) => {
+        this.node.removeChild(item.node ? item.node : item);
+      });
+
+      list.splice(0, list.length);
+      return list;
     });
   }
 

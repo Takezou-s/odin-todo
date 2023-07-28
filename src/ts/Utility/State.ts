@@ -8,7 +8,7 @@ export class StateStore {
   private _owner: any;
   private _propertyNotifier = new PropertyChangedEvent(null, null);
   private _propertyChangedListener = new PropertyChangedListener();
-  private _states: Array<State> = [];
+  protected _states: Array<State> = [];
   private _stateChangedEvent: Event;
 
   constructor(owner: any, delay: number) {
@@ -67,6 +67,30 @@ export class StateStore {
     }
   };
 
+  protected _converters: { stateName: string; getter?: (value: any) => any; setter?: (value: any) => any }[] = [];
+  exportStateValues() {
+    const arr: { stateName: string; value: any }[] = [];
+    this._states.forEach((x) => {
+      if (x.isWrappedFunction()) {
+        return;
+      }
+      const converter = this._converters.find((y) => y.stateName === x.stateName)?.getter;
+      const value = converter ? converter(x.getValue()) : x.getValue();
+      arr.push({ stateName: x.stateName, value: value });
+    });
+    return arr;
+  }
+
+  importStateValues(arr: { stateName: string; value: any }[]) {
+    arr.forEach((x) => {
+      const state = this._findState(x.stateName);
+      if (state?.isWrappedFunction()) {
+        return;
+      }
+      const converter = this._converters.find((y) => y.stateName === x.stateName)?.setter;
+      this.setStateValue(x.stateName, converter ? converter(x.value) : x.value);
+    });
+  }
   public get getDelay(): number | null {
     return this._stateChangedEvent.delay;
   }
@@ -110,6 +134,9 @@ export class State {
     changedPredicate: types.NotifierPropertyChangedPredicate | null = null
   ) {
     this._property = new ChangeNotifierProperty(owner, stateName, notifier, fireAlways, changedPredicate);
+    if (initialValue && typeof initialValue === "function") {
+      initialValue = { fn: initialValue, type: "WrappedFunction" };
+    }
     this._property.setValueSilent(initialValue);
     this._stateName = stateName;
   }
@@ -132,5 +159,9 @@ export class State {
 
   setValueT = <T>(value: T | ((prevValue: T) => T)) => {
     this.setValue(value);
+  };
+
+  isWrappedFunction = () => {
+    return this._property.isWrappedFunction();
   };
 }

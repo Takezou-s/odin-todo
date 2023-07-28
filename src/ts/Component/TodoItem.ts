@@ -29,6 +29,7 @@ export class TodoItem extends Component {
   protected _initNode(): void {
     this.node = document.createElement("div");
     this.addClass("p-2 shadow rounded-2 d-flex flex-column gap-2 ");
+    this.node.style.overflowWrap = "anywhere";
 
     this._header = new Container();
     this._header.addClass("d-flex align-items-center gap-2 fs-4 fw-semibold");
@@ -57,7 +58,7 @@ export class TodoItem extends Component {
     this._descEl.className = "m-0 fs-5";
 
     this._tagContainer = new Container();
-    this._tagContainer.addClass("d-flex gap-2");
+    this._tagContainer.addClass("d-flex flex-wrap gap-2");
 
     this._priorityEl = document.createElement("span");
     this._priorityEl.textContent = "High";

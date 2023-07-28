@@ -1,27 +1,34 @@
-import { List } from "../Utility/List";
-import { State } from "../Utility/State";
-import { Component } from "./Core/Component";
+import * as icons from "@mdi/js";
+
+import { ProjectType } from "../Entity/ProjectType";
+import { TodoProject } from "../Entity/TodoProject";
+import GlobalStateStore from "../Utility/GlobalStateStore";
 import { Container } from "./Core/Container";
-import TabItemComponent from "./Tab/TabItemComponent";
+import { Tabs } from "./Tabs";
+import { Tab } from "./Tab";
+import { Icon } from "./Svg";
+import { Sidebar } from "./Sidebar";
+import { Main } from "./Main";
 
 export default class Page extends Container {
-  private _sideBar!: Container;
+  private _sideBar!: Sidebar;
+  private _todoCategories!: Tabs;
   private _main!: Container;
+  private _defaultCategories!: Array<TodoProject>;
 
   constructor() {
-    super({ nodeType: "div", classes: "row vw-100 vh-100 m-0 border border-dark" });
+    super({ nodeType: "div", classes: "row vw-100 vh-100 m-0 border border-dark overflow-hidden" });
   }
 
   protected _initNode(): void {
     super._initNode();
+    this._sideBar = new Sidebar();
 
-    this._sideBar = new Container({
-      nodeType: "aside",
-      classes: "col-3 border-0 border-end border-primary m-0 px-0 py-3 d-flex flex-column gap-2",
-    });
-    this._main = new Container({ nodeType: "main", classes: "col-9 m-0 px-0 py-3" });
+    this._main = new Main();
 
     this.addChildren(this._sideBar);
     this.addChildren(this._main);
   }
+
+  protected _initStates(): void {}
 }

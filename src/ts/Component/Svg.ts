@@ -5,10 +5,11 @@ export class Icon extends Component {
   private _intervalId: number | null = null;
   private _centered: boolean = false;
 
-  constructor(props: { viewBox?: string; path?: string; styles?: any; classes?: string }) {
+  constructor(props: { viewBox?: string; path?: string; styles?: any; classes?: string; center?: boolean }) {
     props = props || {};
     props.viewBox = props.viewBox || "0 0 24 24";
     props.path = props.path || "";
+    props.center = props.center || false;
     super(props);
   }
   protected _initNode(): void {
@@ -27,6 +28,11 @@ export class Icon extends Component {
     });
     this._bindToState(this._ps.path, ({ getValue }) => {
       this._pathEl.setAttributeNS(null, "d", getValue());
+    });
+    this._bindToState(this._ps.center, ({ getValue }) => {
+      if (getValue()) {
+        this.center();
+      }
     });
   }
 

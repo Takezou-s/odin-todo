@@ -24,7 +24,7 @@ export class ChangeNotifierProperty {
    * @param valueOrFn Property value or function with previous value argument.
    */
   setValue = (valueOrFn: any | types.SetValueFunction) => {
-    const wrappedFunction = this._isWrappedFunction();
+    const wrappedFunction = this.isWrappedFunction();
     let value = valueOrFn;
     if (valueOrFn && typeof valueOrFn === "function") {
       if (wrappedFunction) {
@@ -52,7 +52,7 @@ export class ChangeNotifierProperty {
   setValueSilent = (valueOrFn: any | types.SetValueFunction) => {
     let value = valueOrFn;
     if (valueOrFn && typeof valueOrFn === "function") {
-      if (this._isWrappedFunction()) {
+      if (this.isWrappedFunction()) {
         this._value.fn = valueOrFn;
         return;
       }
@@ -70,13 +70,13 @@ export class ChangeNotifierProperty {
    * @returns Property value.
    */
   getValue = () => {
-    if (this._isWrappedFunction()) {
+    if (this.isWrappedFunction()) {
       return this._value.fn;
     }
     return this._value;
   };
 
-  private _isWrappedFunction = () => {
+  isWrappedFunction = () => {
     return this._value && this._value.type && this._value.type === "WrappedFunction";
   };
   /**

@@ -22,6 +22,7 @@ import { TodoProjectForm } from "./Component/TodoProjectForm";
 import { TodoProject } from "./Entity/TodoProject";
 import { ProjectType } from "./Entity/ProjectType";
 import { ComponentFromString } from "./Component/Core/ComponentFromString";
+import { Note } from "./Entity/Note";
 // //#region 1
 // const radioClicked = (radioTab: Tab) => {
 //   GlobalStateStore.activeTodoCategory.setValue(radioTab.props.id);
@@ -188,7 +189,7 @@ GlobalStateStore.editTodoProjectHandler.setValue((id: any) => {
           }
         }
         GlobalStateStore.todoCategories.setValue((prev: any) => prev);
-        GlobalStateStore.activeTodoCategory.setValue((prev: any) => prev);
+        GlobalStateStore.activeTab.setValue((prev: any) => prev);
         modal.hide();
       },
       todoProject: todoProject,
@@ -213,10 +214,10 @@ GlobalStateStore.deleteTodoProjectHandler.setValue((id: any) => {
           return prev;
         });
         GlobalStateStore.todos.setValue((prev: Todo[]) => {
-          prev = prev.filter((todo) => todo.projectId === id);
+          prev = prev.filter((todo) => todo.projectId !== id);
           return prev;
         });
-        GlobalStateStore.activeTodoCategory.setValue("Today");
+        GlobalStateStore.activeTab.setValue({ show: "Project", id: "Today" });
         modal.hide();
       }
     );
@@ -248,4 +249,50 @@ GlobalStateStore.addTodoHandler.setValue((projectId: any) => {
   modal.show("Create Todo", "Create", form, () => {
     form.submit();
   });
+});
+GlobalStateStore.editTodoHandler.setValue((id: any) => {
+  const todo = GlobalStateStore.todos.getValueT<Todo[]>()?.find((x) => x.id === id)!;
+  if (todo) {
+    const form = new TodoForm({
+      projectId: todo.projectId,
+      onSubmit: ({ form }) => {
+        const obj: any = form.getFormProps();
+        todo.title = obj.title;
+        todo.description = obj.description;
+        todo.date = new Date(obj.date);
+        todo.priority = obj.priority;
+        todo.reminderDay = obj.reminderDay;
+        GlobalStateStore.todos.setValue((prev: any) => prev);
+        modal.hide();
+      },
+      todo: todo,
+    });
+    modal.show("Edit Todo", "Save", form, () => form.submit());
+  }
+});
+GlobalStateStore.deleteTodoHandler.setValue((id: any) => {
+  const index = GlobalStateStore.todos.getValueT<Todo[]>()?.findIndex((x) => x.id === id)!;
+  if (index >= 0) {
+    modal.show(
+      "Delete Todo",
+      "Delete",
+      new ComponentFromString({
+        htmlString: `
+    <p>Do you really want to delete todo with notes in it?</p>
+    `,
+      }),
+      () => {
+        GlobalStateStore.todos.setValue((prev: Todo[]) => {
+          prev.splice(index, 1);
+          return prev;
+        });
+        GlobalStateStore.notes.setValue((prev: Note[]) => {
+          prev = prev.filter((note) => note.todoId !== id);
+          return prev;
+        });
+        GlobalStateStore.activeTab.setValue((prev: any) => prev);
+        modal.hide();
+      }
+    );
+  }
 });

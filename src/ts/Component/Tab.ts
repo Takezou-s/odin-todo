@@ -5,13 +5,13 @@ export class Tab extends Component {
   _textEl!: HTMLElement;
   _todoCountEl!: HTMLElement;
 
-  constructor(props: { id: any; text: string; count: number; styles?: any; classes?: string }) {
+  constructor(props: { id: any; text: string; count: number; show: string; styles?: any; classes?: string }) {
     super(props);
   }
 
   protected _initNode(): void {
     this.node = document.createElement("button");
-    this.node.addEventListener("click", () => GlobalStateStore.activeTodoCategory.setValue(this.props.id));
+    this.node.addEventListener("click", () => GlobalStateStore.activeTab.setValue({ show: this.props.show, id: this.props.id }));
     this.addClass("btn btn-lg btn-outline-primary border-start-0 border-end-0 rounded-0 d-flex align-items-center");
 
     this._textEl = document.createElement("span");
@@ -30,8 +30,9 @@ export class Tab extends Component {
   protected _initStates(): void {
     this._subscribeStateStore(GlobalStateStore);
 
-    this._bindToState(GlobalStateStore.activeTodoCategory, ({ getValue }) => {
-      if (this.props.id === getValue()) {
+    this._bindToState(GlobalStateStore.activeTab, ({ getValue }) => {
+      const obj = getValue();
+      if (this.props.id === obj.id && this.props.show === obj.show) {
         this.addClass("active");
         this._todoCountEl.classList.remove("text-bg-dark");
         this._todoCountEl.classList.add("text-bg-light");

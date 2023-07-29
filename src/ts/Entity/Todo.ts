@@ -32,7 +32,7 @@ export class Todo {
     public date: Date,
     public priority: TodoPriority,
     public status: TodoStatus,
-    public projectId?: any,
+    public projectId: any,
     public reminderDay: number = 0
   ) {}
 }

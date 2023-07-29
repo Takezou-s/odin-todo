@@ -4,11 +4,12 @@ import { Component } from "./Core/Component";
 import { Icon } from "./Svg";
 
 export class IconButton extends Component {
-  constructor(props?: { onClick?: () => void; icon?: string; fontSize?: string; styles?: any; classes?: string }) {
+  constructor(props?: { onClick?: () => void; icon?: string; fontSize?: string; title?: string; styles?: any; classes?: string }) {
     props = props || {};
     props.onClick = props.onClick || (() => {});
     props.icon = props.icon || "";
     props.fontSize = props.fontSize || "2rem";
+    props.title = props.title || "";
     super(props);
   }
   protected _initNode(): void {
@@ -27,6 +28,14 @@ export class IconButton extends Component {
     this._bindToState(this._ps.fontSize, ({ getValue }) => {
       const val = getValue();
       this.node.style.setProperty("font-size", val, "important");
+    });
+    this._bindToState(this._ps.title, ({ getValue }) => {
+      const val = getValue();
+      if (val) {
+        this.node.setAttribute("title", val);
+      } else {
+        this.node.removeAttribute("title");
+      }
     });
   }
 }

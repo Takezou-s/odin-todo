@@ -1,9 +1,12 @@
+import * as dateHelper from "date-fns";
+
+import { Todo } from "../Entity/Todo";
 import { TodoPriority } from "../Entity/TodoPriority";
 import { Component } from "./Core/Component";
 import { Form } from "./Core/Form";
 
 export class TodoForm extends Form {
-  _addReminderInput!: HTMLElement;
+  _addReminderInput!: HTMLInputElement;
   _addReminderLabel!: HTMLElement;
   _addReminder!: HTMLElement;
 
@@ -12,10 +15,12 @@ export class TodoForm extends Form {
     projectId: any;
     onSubmit?: (args: { form: TodoForm; formProps: any; event: any }) => void;
     onReset?: (args: { form: TodoForm; event: any }) => void;
+    todo?: Todo | null;
   }) {
     props = props || {};
     props.onSubmit = props.onSubmit || ((args: { form: TodoForm; formProps: any; event: any }) => {});
     props.onReset = props.onReset || ((args: { form: TodoForm; event: any }) => {});
+    props.todo = props.todo || null;
     super(props);
   }
   protected _initNode(): void {
@@ -55,13 +60,7 @@ export class TodoForm extends Form {
     this._addReminderInput.setAttribute("type", "checkbox");
     this._addReminderInput.addEventListener("change", (event) => {
       const input: HTMLInputElement = (event.target as HTMLInputElement)!;
-      if (input.checked) {
-        this._reminderEl.classList.remove("d-none");
-        this._reminderEl.querySelector("input")?.setAttribute("required", "");
-      } else {
-        this._reminderEl.classList.add("d-none");
-        this._reminderEl.querySelector("input")?.removeAttribute("required");
-      }
+      this.inputCheckedHandler(input);
     });
 
     this._addReminderLabel = document.createElement("label");
@@ -83,17 +82,39 @@ export class TodoForm extends Form {
 
     this.node.append(this._reminderEl);
 
-    this.node.insertAdjacentHTML(
-      "beforeend",
-      `
-      <div class="d-flex justify-content-end gap-2">
-        <button type="submit" class="btn btn-outline-dark">Submit</button>
-        <button type="reset" class="btn btn-outline-dark">Cancel</button>
-      </div>
-      `
-    );
+    // this.node.insertAdjacentHTML(
+    //   "beforeend",
+    //   `
+    //   <div class="d-flex justify-content-end gap-2">
+    //     <button type="submit" class="btn btn-outline-dark">Submit</button>
+    //     <button type="reset" class="btn btn-outline-dark">Cancel</button>
+    //   </div>
+    //   `
+    // );
   }
+  private inputCheckedHandler(input: HTMLInputElement) {
+    if (input.checked) {
+      this._reminderEl.classList.remove("d-none");
+      this._reminderEl.querySelector("input")?.setAttribute("required", "");
+    } else {
+      this._reminderEl.classList.add("d-none");
+      this._reminderEl.querySelector("input")?.removeAttribute("required");
+    }
+  }
+
   protected _initStates(): void {
+    this._bindToState(this._ps.todo, ({ getValueT }) => {
+      const todo = getValueT<Todo>();
+      if (todo) {
+        this.setInputValue("#title", todo.title);
+        this.setInputValue("#description", todo.description);
+        this.setInputValue("#date", dateHelper.format(todo.date, "yyyy-MM-dd"));
+        this.setInputValue("#priority", todo.priority);
+        this.setInputValue("#reminderDay", todo.reminderDay);
+        this._addReminderInput.checked = todo.reminderDay > 0;
+        this.inputCheckedHandler(this._addReminderInput);
+      }
+    });
     this._bindToState(this._ps.onSubmit, ({ getValueT }) => {
       const fn = getValueT<(args: { form: TodoForm; formProps: any; event: any }) => void>();
       if (fn && typeof fn === "function") {

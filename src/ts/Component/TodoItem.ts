@@ -8,6 +8,8 @@ import { Todo } from "../Entity/Todo";
 import { TodoPriority } from "../Entity/TodoPriority";
 import { TodoStatus } from "../Entity/TodoStatus";
 import { DueStatus } from "../Entity/DueStatus";
+import GlobalStateStore from "../Utility/GlobalStateStore";
+import { IconButton } from "./AddButton";
 
 export class TodoItem extends Component {
   private _header!: Container;
@@ -21,6 +23,11 @@ export class TodoItem extends Component {
   private _dateContainer!: Container;
   private _dateIcon!: Icon;
   private _dateText!: HTMLElement;
+  private _buttonContainer!: Container;
+  private _detailsButton!: HTMLElement;
+  private _setStatusContainer!: Container;
+  private _droppedButton!: HTMLElement;
+  private _doneButton!: HTMLElement;
 
   constructor(props: { todo: Todo }) {
     super(props);
@@ -71,15 +78,85 @@ export class TodoItem extends Component {
     this._tagContainer.addChildren([this._priorityEl, this._dueStatusEl]);
 
     this._dateContainer = new Container();
-    this._dateContainer.addClass("d-flex align-items-center gap-2 fs-6 text-success fw-light");
+    this._dateContainer.addClass("d-flex align-items-center gap-2 fs-5 text-success fw-light");
 
-    this._dateIcon = new Icon({ viewBox: "0 0 24 24", path: icons.mdiCalendar, classes: "fs-5" });
+    this._dateIcon = new Icon({ viewBox: "0 0 24 24", path: icons.mdiCalendar, classes: "fs-4" });
     this._dateIcon.center();
     this._dateText = document.createElement("span");
     this._dateText.textContent = "25.07.2023";
     this._dateContainer.addChildren([this._dateIcon, this._dateText]);
 
-    this.node.append(this._header.render(), this._descEl, this._tagContainer.render(), this._dateContainer.render());
+    this._buttonContainer = new Container({ classes: "d-flex flex-wrap align-items-center gap-2" });
+
+    this._buttonContainer.addChildren([
+      new IconButton({
+        onClick: () => {
+          GlobalStateStore.activeTab.setValue({ show: "Todo", id: this.props.todo.id });
+        },
+        icon: icons.mdiArrowExpand,
+        classes: "btn-dark",
+        fontSize: "1.5rem",
+        title: "Details",
+      }),
+      new IconButton({
+        onClick: () => {
+          GlobalStateStore.addNoteHandler.getValue()(this.props.todo.id);
+        },
+        icon: icons.mdiPlus,
+        title: "Add Note",
+      }),
+      new IconButton({
+        onClick: () => {
+          GlobalStateStore.editTodoHandler.getValue()(this.props.todo.id);
+        },
+        icon: icons.mdiBookEdit,
+        classes: "btn-success",
+        fontSize: "1.5rem",
+        title: "Edit Todo",
+      }),
+      new IconButton({
+        onClick: () => {
+          GlobalStateStore.deleteTodoHandler.getValue()(this.props.todo.id);
+        },
+        icon: icons.mdiDelete,
+        classes: "btn-danger",
+        fontSize: "1.5rem",
+        title: "Delete Todo",
+      }),
+    ]);
+
+    const setStatus = (status: TodoStatus) => {
+      GlobalStateStore.todos.setValueT<Todo[]>((list: Todo[]) => {
+        this.setPropValue("todo", (prev: Todo) => {
+          prev.status = status;
+          return prev;
+        });
+        return list;
+      });
+    };
+
+    this._setStatusContainer = new Container({ classes: "row m-0 p-0" });
+    this._droppedButton = document.createElement("button");
+    this._droppedButton.className = "btn btn-danger m-0 col-6 rounded-0";
+    this._droppedButton.textContent = "Dropped";
+
+    this._doneButton = document.createElement("button");
+    this._doneButton.className = "btn btn-success m-0 col-6 rounded-0";
+    this._doneButton.textContent = "Done";
+
+    this._droppedButton.addEventListener("click", () => setStatus(TodoStatus.dropped));
+    this._doneButton.addEventListener("click", () => setStatus(TodoStatus.done));
+
+    this._setStatusContainer.addChildren([this._droppedButton, this._doneButton]);
+
+    this.node.append(
+      this._header.render(),
+      this._descEl,
+      this._tagContainer.render(),
+      this._dateContainer.render(),
+      this._buttonContainer.render(),
+      this._setStatusContainer.render()
+    );
   }
 
   protected _initStates(): void {
@@ -99,6 +176,12 @@ export class TodoItem extends Component {
 
         this._dueStatusEl.textContent = todo.dueStatus;
         this.assignSourceToTarget(this._dueStatusEl.style, this.dueStatusStyle(todo.dueStatus));
+
+        if (todo.status !== TodoStatus.todo) {
+          this._setStatusContainer.addClass("d-none");
+        } else {
+          this._setStatusContainer.removeClass("d-none");
+        }
       }
     });
   }

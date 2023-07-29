@@ -12,9 +12,10 @@ import { IconButton } from "./AddButton";
 import { Note } from "../Entity/Note";
 import { ComponentFromString } from "./Core/ComponentFromString";
 import { Component } from "./Core/Component";
+import { NoteItem } from "./Note";
 
 export class Main extends Container {
-  private _categoryId: any;
+  private _lastShown: { show: string; id: any } | null = null;
   private _loading?: Component;
   constructor() {
     super({
@@ -25,8 +26,8 @@ export class Main extends Container {
   }
 
   refresh() {
-    if (this._categoryId) {
-      this.display(this._categoryId);
+    if (this._lastShown) {
+      this.display(this._lastShown);
     }
   }
 
@@ -36,7 +37,7 @@ export class Main extends Container {
 
   protected _initStates(): void {
     this._subscribeStateStore(GlobalStateStore);
-    this._bindToState(GlobalStateStore.activeTodoCategory, ({ getValue }) => {
+    this._bindToState(GlobalStateStore.activeTab, ({ getValue }) => {
       this.display(getValue());
     });
 
@@ -45,8 +46,28 @@ export class Main extends Container {
     });
   }
 
-  private async display(id: any) {
-    this._categoryId = id;
+  private display(obj: { show: string; id: any }) {
+    if (obj.show === "Project" || obj.show === "Notes") {
+      this._lastShown = obj;
+      this.displayCategoryOrNote(obj.id);
+    } else if (obj.show === "Todo") {
+      this._lastShown = obj;
+      this.displayTodo(obj.id);
+    }
+  }
+
+  private displayTodo(id: any) {
+    const todo = GlobalStateStore.todos.getValueT<Todo[]>()?.find((x) => x.id === id);
+    if (todo) {
+      const notes = GlobalStateStore.notes.getValueT<Note[]>()?.filter((x) => x.todoId === id);
+      this.clearChildren();
+      const header = this.getTodoNameElement(todo.title, todo.description, true, id);
+      this.addChildren(header);
+      this.addNoteElements(notes);
+    }
+  }
+
+  private async displayCategoryOrNote(id: any) {
     this.showLoading();
     // await new Promise((resolve, reject) => {
     //   setTimeout(() => {
@@ -220,5 +241,74 @@ export class Main extends Container {
 
     container.addChildren(innerContainer);
     return container;
+  }
+
+  private getTodoNameElement(todoName: string, description: string | undefined, showCreateButton: boolean, id: any) {
+    const container = new Container({ classes: "col-12 p-2" });
+    const innerContainer = new Container({ classes: "p-2 shadow rounded-3" });
+    const titleContainer = new Container({ classes: "d-flex align-items-center gap-2 py-2" });
+
+    const title = document.createElement("h3");
+    title.className = "text-truncate m-0";
+    title.title = todoName;
+    title.textContent = todoName;
+
+    titleContainer.addChildren(title);
+    if (showCreateButton) {
+      titleContainer.addChildren(
+        new IconButton({
+          onClick: () => {
+            GlobalStateStore.addNoteHandler.getValue()(id);
+          },
+          icon: icons.mdiPlus,
+          classes: "ms-4",
+        })
+      );
+
+      titleContainer.addChildren(
+        new IconButton({
+          onClick: () => {
+            GlobalStateStore.editTodoHandler.getValue()(id);
+          },
+          icon: icons.mdiBookEdit,
+          classes: "btn-success",
+          fontSize: "1.5rem",
+        })
+      );
+
+      titleContainer.addChildren(
+        new IconButton({
+          onClick: () => {
+            GlobalStateStore.deleteTodoHandler.getValue()(id);
+          },
+          icon: icons.mdiDelete,
+          classes: "btn-danger",
+          fontSize: "1.5rem",
+        })
+      );
+    }
+    innerContainer.addChildren(titleContainer);
+
+    if (description) {
+      const desc = document.createElement("p");
+      desc.className = "my-2 fs-4";
+      desc.textContent = description;
+      innerContainer.addChildren(desc);
+      titleContainer.addClass("border-bottom");
+    }
+
+    container.addChildren(innerContainer);
+    return container;
+  }
+
+  private addNoteElements(notes: Note[] | undefined) {
+    let empty = true;
+    if (notes && notes.length > 0) {
+      empty = false;
+      this.addChildren(
+        notes.map<Container>((x) => new Container({ classes: "col-md-6 col-lg-4 col-xxl-3 p-2", children: new NoteItem({ note: x }) }))
+      );
+    }
+    return empty;
   }
 }

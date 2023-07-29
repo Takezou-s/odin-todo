@@ -50,7 +50,7 @@ export class GlobalStateStore extends StateStore {
     [new TodoProject("1", "Proj - 1", "This is a project.", 0, ProjectType.category)],
     true
   );
-  activeTodoCategory: State = this.createState("activeTodoCategory", "Today", true);
+  activeTab: State = this.createState("activeTab", { show: "Project", id: "Today" }, true);
   addTodoCategoryHandler: State = this.createState("addTodoCategoryHandler", () => {
     throw new Error("Implement addTodoCategoryHandler");
   });
@@ -165,12 +165,27 @@ export class GlobalStateStore extends StateStore {
     return;
     throw new Error("Implement addTodoHandler");
   });
+  editTodoHandler: State = this.createState("editTodoHandler", (id: any) => {
+    console.log(id);
+    return;
+    throw new Error("Implement addTodoHandler");
+  });
+  deleteTodoHandler: State = this.createState("deleteTodoHandler", (id: any) => {
+    console.log(id);
+    return;
+    throw new Error("Implement addTodoHandler");
+  });
   editTodoProjectHandler: State = this.createState("editTodoProjectHandler", (id: any) => {
     console.log(id);
     return;
     throw new Error("Implement addTodoHandler");
   });
-  deleteTodoProjectHandler: State = this.createState("editTodoProjectHandler", (id: any) => {
+  deleteTodoProjectHandler: State = this.createState("deleteTodoProjectHandler", (id: any) => {
+    console.log(id);
+    return;
+    throw new Error("Implement addTodoHandler");
+  });
+  addNoteHandler: State = this.createState("addNoteHandler", (id: any) => {
     console.log(id);
     return;
     throw new Error("Implement addTodoHandler");

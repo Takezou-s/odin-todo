@@ -49,7 +49,7 @@ export class Icon extends Component {
         this.centerPath();
         this._centered = true;
       },
-      100,
+      20,
       null
     );
   }

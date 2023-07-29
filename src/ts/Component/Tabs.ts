@@ -3,7 +3,7 @@ import { Component } from "./Core/Component";
 import { Tab } from "./Tab";
 
 export class Tabs extends Component {
-  constructor(props?: { tabs?: Array<{ id: any; text: string; count: number }>; styles?: any; classes?: string }) {
+  constructor(props?: { tabs?: Array<{ id: any; text: string; count: number; show: string }>; styles?: any; classes?: string }) {
     props = props || {};
     props.tabs = props.tabs || [];
     super(props);
@@ -14,11 +14,11 @@ export class Tabs extends Component {
 
   protected _initStates(): void {
     this._bindToState(this._ps.tabs, ({ getValueT }) => {
-      const tabs = getValueT<Array<{ id: any; text: string; count: number }>>();
+      const tabs = getValueT<Array<{ id: any; text: string; count: number; show: string }>>();
       this.node.innerHTML = "";
       if (tabs) {
         tabs.forEach((x) => {
-          this.node.appendChild(new Tab({ id: x.id, text: x.text, count: x.count }).render());
+          this.node.appendChild(new Tab({ id: x.id, text: x.text, count: x.count, show: x.show }).render());
         });
       }
     });

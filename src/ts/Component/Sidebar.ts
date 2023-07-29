@@ -68,19 +68,19 @@ export class Sidebar extends Container {
     this._todoCategories.addClass("d-flex flex-column gap-2 ps-5 overflow-auto");
     this.addChildren(this._todoCategories);
 
-    this.addChildren(new Tab({ id: "Notes", text: "Notes", count: 0 }));
+    this.addChildren(new Tab({ id: "Notes", text: "Notes", count: 0, show: "Notes" }));
   }
 
   protected _initStates(): void {
     this._subscribeStateStore(GlobalStateStore);
     this._bindToState(GlobalStateStore.defaultCategories, ({ getValueT }) => {
       this._defaultCategories.props.tabs = getValueT<Array<TodoProject>>()?.map<{ id: any; text: string; count: number }>((x) => {
-        return { id: x.id, text: x.title, count: x.todoCount };
+        return { id: x.id, text: x.title, count: x.todoCount, show: "Project" };
       });
     });
     this._bindToState(GlobalStateStore.todoCategories, ({ getValueT }) => {
       this._todoCategories.props.tabs = getValueT<Array<TodoProject>>()?.map<{ id: any; text: string; count: number }>((x) => {
-        return { id: x.id, text: x.title, count: x.todoCount };
+        return { id: x.id, text: x.title, count: x.todoCount, show: "Project" };
       });
     });
     this._bindToState(GlobalStateStore.addTodoCategoryHandler, ({ getValue }) => {

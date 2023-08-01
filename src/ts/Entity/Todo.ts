@@ -14,15 +14,21 @@ export class Todo {
       if (dateHelper.format(this.date, "dd-MM-yyyy") === dateHelper.format(new Date(), "dd-MM-yyyy")) {
         result = DueStatus.inProgress;
       } else if (this.reminderDay > 0) {
-        const dayDiff = dateHelper.differenceInDays(this.date, new Date());
+        const today = new Date();
+        const dayDiff = dateHelper.differenceInDays(this.nullifyTime(this.date), this.nullifyTime(today));
         if (dayDiff <= this.reminderDay && dayDiff > 0) {
           result = DueStatus.close;
         }
-      } else if (dateHelper.differenceInDays(this.date, new Date()) < 0) {
+      } else if (dateHelper.differenceInDays(this.nullifyTime(this.date), this.nullifyTime(new Date())) < 0) {
         result = DueStatus.overdue;
       }
     }
     return result;
+  }
+
+  private nullifyTime(date: Date) {
+    date.setHours(0, 0, 0, 0);
+    return date;
   }
 
   constructor(

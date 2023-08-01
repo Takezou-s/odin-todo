@@ -23,136 +23,13 @@ import { TodoProject } from "./Entity/TodoProject";
 import { ProjectType } from "./Entity/ProjectType";
 import { ComponentFromString } from "./Component/Core/ComponentFromString";
 import { Note } from "./Entity/Note";
-// //#region 1
-// const radioClicked = (radioTab: Tab) => {
-//   GlobalStateStore.activeTodoCategory.setValue(radioTab.props.id);
-// };
-// const radioTab1 = new Tab({
-//   id: "1",
-//   text: "Todayyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
-//   count: 999,
-// });
-// const radioTab2 = new Tab({
-//   id: "2",
-//   text: "Approaching",
-//   count: 1,
-// });
-// const radioTab3 = new Tab({
-//   id: "3",
-//   text: "Past",
-//   count: 99,
-// });
-// const radioTab4 = new Tab({
-//   id: "4",
-//   text: "Notes",
-//   count: 100,
-//   classes: "text-truncate btn btn-lg text-start btn-outline-dark border-start-0 border-end-0 rounded-0",
-// });
-// const sideBar = new Container({
-//   nodeType: "aside",
-//   children: [
-//     radioTab1,
-//     radioTab2,
-//     radioTab3,
+import { NoteForm } from "./Component/NoteForm";
+import { State } from "./Utility/State";
 
-//     new Container({
-//       classes: "d-flex justify-content-between align-items-center fs-5 px-3 py-2",
-//       children: [
-//         new ComponentFromElement(
-//           "span",
-//           [
-//             {
-//               propName: "title",
-//               fn(comp) {
-//                 return ({ getValue }) => {
-//                   comp.node.textContent = getValue();
-//                 };
-//               },
-//             },
-//           ],
-//           { title: "Projects", classes: "text-truncate" }
-//         ),
-//         new Container({
-//           classes: "btn btn-primary p-0 m-0 fs-5 rounded-circle d-flex justify-content-center align-items-center",
-//           styles: {
-//             minWidth: "40px",
-//             maxWidth: "40px",
-//             minHeight: "40px",
-//             maxHeight: "40px",
-//           },
-//           nodeType: "button",
-//           children: new Icon({ path: icons.mdiPlus, center: true }),
-//         }),
-//       ],
-//     }),
-
-//     radioTab4,
-//   ],
-//   classes: "col-3 h-100 border border-dark px-0 py-3 d-flex flex-column gap-2",
-// });
-// const main = new Container({
-//   nodeType: "main",
-//   classes: "row h-100 overflow-auto m-0 col-9 border border-dark d-flex align-items-start justify-content-start",
-// });
-// const container = new Container({
-//   nodeType: "div",
-//   children: [sideBar, main],
-//   classes: "row vw-100 vh-100 m-0 border border-dark overflow-hidden",
-// });
-// BodyComponent.render(container);
-
-// let count = 0;
-// function getTodo(): Component {
-//   count++;
-
-//   const todo = new TodoItem({
-//     todo: new Todo(
-//       count,
-//       count.toString(),
-//       "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vestibulum tincidunt congue. Vestibulum ligula augue porttitor. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vestibulum tincidunt congue. Vestibulum ligula augue porttitor.",
-//       new Date(),
-//       TodoPriority.high,
-//       TodoStatus.todo,
-//       DueStatus.close
-//     ),
-//   });
-//   return new Container({ classes: "col-3 p-2", children: todo });
-// }
-// main.addChildren(getTodo());
-// main.addChildren(getTodo());
-// main.addChildren(getTodo());
-// main.addChildren(getTodo());
-// main.addChildren(getTodo());
-// main.addChildren(getTodo());
-// main.addChildren(getTodo());
-// main.addChildren(getTodo());
-// main.addChildren(getTodo());
-// main.addChildren(getTodo());
-// main.addChildren(getTodo());
-// main.addChildren(getTodo());
-// main.addChildren(getTodo());
-// main.addChildren(getTodo());
-// main.addChildren(getTodo());
-// main.addClass("row overflow-auto");
-
-// // BodyComponent.render(
-// //   new TodoForm({
-// //     projectId: 1,
-// //     onSubmit(args) {
-// //       console.log(args);
-// //     },
-// //   })
-// // );
-// localStorage.setItem("store", JSON.stringify(GlobalStateStore.exportStateValues()));
-// const storeJSON = localStorage.getItem("store");
-// if (storeJSON) {
-//   GlobalStateStore.importStateValues(JSON.parse(storeJSON));
-// }
-
-// setInterval(() => {
-//   localStorage.setItem("store", JSON.stringify(GlobalStateStore.exportStateValues()));
-// }, 1000);
-// //#endregion
+const storeJSON = localStorage.getItem("store");
+if (storeJSON) {
+  GlobalStateStore.importStateValues(JSON.parse(storeJSON));
+}
 
 BodyComponent.render(new Page());
 const modal = new Modal();
@@ -236,7 +113,7 @@ GlobalStateStore.addTodoHandler.setValue((projectId: any) => {
         obj.priority,
         TodoStatus.todo,
         obj.projectId,
-        obj.reminderDay
+        +obj.reminderDay
       );
 
       GlobalStateStore.todos.setValue((prev: any) => {
@@ -261,7 +138,7 @@ GlobalStateStore.editTodoHandler.setValue((id: any) => {
         todo.description = obj.description;
         todo.date = new Date(obj.date);
         todo.priority = obj.priority;
-        todo.reminderDay = obj.reminderDay;
+        todo.reminderDay = +obj.reminderDay;
         GlobalStateStore.todos.setValue((prev: any) => prev);
         modal.hide();
       },
@@ -295,4 +172,93 @@ GlobalStateStore.deleteTodoHandler.setValue((id: any) => {
       }
     );
   }
+});
+GlobalStateStore.addNoteHandler.setValue((todoId: any) => {
+  const form = new NoteForm({
+    todoId,
+    onSubmit: ({ form }) => {
+      const obj: any = form.getFormProps();
+      const note = new Note(Math.random().toString(), obj.title, obj.description, todoId);
+
+      GlobalStateStore.notes.setValue((prev: any) => {
+        prev.push(note);
+        return prev;
+      });
+      modal.hide();
+    },
+  });
+  modal.show("Create Note", "Create", form, () => {
+    form.submit();
+  });
+});
+GlobalStateStore.editNoteHandler.setValue((id: any) => {
+  const note = GlobalStateStore.notes.getValueT<Note[]>()?.find((x) => x.id === id)!;
+  if (note) {
+    const form = new NoteForm({
+      todoId: note.todoId,
+      onSubmit: ({ form }) => {
+        const obj: any = form.getFormProps();
+        note.title = obj.title;
+        note.description = obj.description;
+        GlobalStateStore.notes.setValue((prev: any) => prev);
+        modal.hide();
+      },
+      note,
+    });
+    modal.show("Edit Note", "Save", form, () => form.submit());
+  }
+});
+GlobalStateStore.deleteNoteHandler.setValue((id: any) => {
+  const index = GlobalStateStore.notes.getValueT<Note[]>()?.findIndex((x) => x.id === id)!;
+  if (index >= 0) {
+    modal.show(
+      "Delete Note",
+      "Delete",
+      new ComponentFromString({
+        htmlString: `
+    <p>Do you really want to delete note?</p>
+    `,
+      }),
+      () => {
+        GlobalStateStore.notes.setValue((prev: Note[]) => {
+          prev.splice(index, 1);
+          return prev;
+        });
+        modal.hide();
+      }
+    );
+  }
+});
+
+function todoCount() {
+  const today = GlobalStateStore.defaultCategories.getValueT<Array<TodoProject>>()?.find((x) => x.id === "Today");
+  if (today) {
+    today.todoCount =
+      GlobalStateStore.todos.getValueT<Todo[]>()?.filter((x) => x.status === TodoStatus.todo && x.dueStatus === DueStatus.inProgress)
+        .length || 0;
+  }
+
+  const close = GlobalStateStore.defaultCategories.getValueT<Array<TodoProject>>()?.find((x) => x.id === "Close");
+  if (close) {
+    close.todoCount =
+      GlobalStateStore.todos.getValueT<Todo[]>()?.filter((x) => x.status === TodoStatus.todo && x.dueStatus === DueStatus.close)
+        .length || 0;
+  }
+
+  const overdue = GlobalStateStore.defaultCategories.getValueT<Array<TodoProject>>()?.find((x) => x.id === "Overdue");
+  if (overdue) {
+    overdue.todoCount =
+      GlobalStateStore.todos.getValueT<Todo[]>()?.filter((x) => x.status === TodoStatus.todo && x.dueStatus === DueStatus.overdue)
+        .length || 0;
+  }
+
+  GlobalStateStore.defaultCategories.setValue((prev: any) => prev);
+}
+
+todoCount();
+GlobalStateStore.subscribeStoreChanged((sender: any, args: any) => {
+  if (GlobalStateStore.todos.changed) {
+    todoCount();
+  }
+  localStorage.setItem("store", JSON.stringify(GlobalStateStore.exportStateValues()));
 });

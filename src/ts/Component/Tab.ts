@@ -34,12 +34,14 @@ export class Tab extends Component {
       const obj = getValue();
       if (this.props.id === obj.id && this.props.show === obj.show) {
         this.addClass("active");
-        this._todoCountEl.classList.remove("text-bg-dark");
-        this._todoCountEl.classList.add("text-bg-light");
+        this._todoCountEl.classList.remove("text-bg-primary");
+        this._todoCountEl.classList.add("bg-light");
+        this._todoCountEl.classList.add("text-primary");
       } else {
         this.removeClass("active");
-        this._todoCountEl.classList.add("text-bg-dark");
-        this._todoCountEl.classList.remove("text-bg-light");
+        this._todoCountEl.classList.add("text-bg-primary");
+        this._todoCountEl.classList.remove("bg-light");
+        this._todoCountEl.classList.remove("text-primary");
       }
     });
 

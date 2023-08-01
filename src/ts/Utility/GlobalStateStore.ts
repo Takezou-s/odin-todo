@@ -1,4 +1,4 @@
-import { DueStatus } from "../Entity/DueStatus";
+import { Note } from "../Entity/Note";
 import { ProjectType } from "../Entity/ProjectType";
 import { Todo } from "../Entity/Todo";
 import { TodoPriority } from "../Entity/TodoPriority";
@@ -6,7 +6,7 @@ import { TodoProject } from "../Entity/TodoProject";
 import { TodoStatus } from "../Entity/TodoStatus";
 import { State, StateStore } from "./State";
 
-export class GlobalStateStore extends StateStore {
+class GlobalStateStore extends StateStore {
   constructor(owner: any, delay: any) {
     super(owner, delay);
     this._converters.push({
@@ -30,8 +30,16 @@ export class GlobalStateStore extends StateStore {
       setter: (value) => {
         let array: Todo[] = [];
         array = (value as any[]).map<Todo>(
-          (x) => new Todo(x.id, x.title, x.description, new Date(x.date), x.priority, x.status, x.projectId)
+          (x) => new Todo(x.id, x.title, x.description, new Date(x.date), x.priority, x.status, x.projectId, x.reminderDay || 0)
         );
+        return array;
+      },
+    });
+    this._converters.push({
+      stateName: "notes",
+      setter: (value) => {
+        let array: Note[] = [];
+        array = (value as any[]).map<Note>((x) => new Note(x.id, x.title, x.description, x.todoId));
         return array;
       },
     });
@@ -45,121 +53,11 @@ export class GlobalStateStore extends StateStore {
     ],
     true
   );
-  todoCategories: State = this.createState(
-    "todoCategories",
-    [new TodoProject("1", "Proj - 1", "This is a project.", 0, ProjectType.category)],
-    true
-  );
+  todoCategories: State = this.createState("todoCategories", [], true);
   activeTab: State = this.createState("activeTab", { show: "Project", id: "Today" }, true);
-  addTodoCategoryHandler: State = this.createState("addTodoCategoryHandler", () => {
-    throw new Error("Implement addTodoCategoryHandler");
-  });
 
-  todos: State = this.createState(
-    "todos",
-    [
-      new Todo(
-        Math.random().toString(),
-        "Todo - " + Math.random().toString(),
-        "desc",
-        new Date(2023, 6, 28),
-        TodoPriority.high,
-        TodoStatus.todo,
-        "1"
-      ),
-      new Todo(
-        Math.random().toString(),
-        "Todo - " + Math.random().toString(),
-        "desc",
-        new Date(2023, 6, 28),
-        TodoPriority.high,
-        TodoStatus.todo,
-        "1"
-      ),
-      new Todo(
-        Math.random().toString(),
-        "Todo - " + Math.random().toString(),
-        "desc",
-        new Date(2023, 6, 28),
-        TodoPriority.high,
-        TodoStatus.todo,
-        "1"
-      ),
-      new Todo(
-        Math.random().toString(),
-        "Todo - " + Math.random().toString(),
-        "desc",
-        new Date(2023, 6, 28),
-        TodoPriority.high,
-        TodoStatus.todo,
-        "1"
-      ),
-      new Todo(
-        Math.random().toString(),
-        "Todo - " + Math.random().toString(),
-        "desc",
-        new Date(2023, 6, 28),
-        TodoPriority.high,
-        TodoStatus.todo,
-        "1"
-      ),
-      new Todo(
-        Math.random().toString(),
-        "Todo - " + Math.random().toString(),
-        "desc",
-        new Date(2023, 6, 28),
-        TodoPriority.high,
-        TodoStatus.todo,
-        "1"
-      ),
-      new Todo(
-        Math.random().toString(),
-        "Todo - " + Math.random().toString(),
-        "desc",
-        new Date(2023, 6, 28),
-        TodoPriority.high,
-        TodoStatus.todo,
-        "1"
-      ),
-      new Todo(
-        Math.random().toString(),
-        "Todo - " + Math.random().toString(),
-        "desc",
-        new Date(2023, 6, 28),
-        TodoPriority.high,
-        TodoStatus.todo,
-        "1"
-      ),
-      new Todo(
-        Math.random().toString(),
-        "Todo - " + Math.random().toString(),
-        "desc",
-        new Date(2023, 6, 28),
-        TodoPriority.high,
-        TodoStatus.todo,
-        "1"
-      ),
-      new Todo(
-        Math.random().toString(),
-        "Todo - " + Math.random().toString(),
-        "desc",
-        new Date(2023, 6, 28),
-        TodoPriority.high,
-        TodoStatus.todo,
-        "1"
-      ),
-      new Todo(
-        Math.random().toString(),
-        "Todo - " + Math.random().toString(),
-        "desc",
-        new Date(2023, 6, 28),
-        TodoPriority.high,
-        TodoStatus.todo,
-        "1"
-      ),
-    ],
-    true
-  );
+  todos: State = this.createState("todos", [], true);
+  notes: State = this.createState("notes", [], true);
   addTodoHandler: State = this.createState("addTodoHandler", (id: any) => {
     console.log(id);
     return;
@@ -175,6 +73,9 @@ export class GlobalStateStore extends StateStore {
     return;
     throw new Error("Implement addTodoHandler");
   });
+  addTodoCategoryHandler: State = this.createState("addTodoCategoryHandler", () => {
+    throw new Error("Implement addTodoCategoryHandler");
+  });
   editTodoProjectHandler: State = this.createState("editTodoProjectHandler", (id: any) => {
     console.log(id);
     return;
@@ -185,13 +86,21 @@ export class GlobalStateStore extends StateStore {
     return;
     throw new Error("Implement addTodoHandler");
   });
-  addNoteHandler: State = this.createState("addNoteHandler", (id: any) => {
+  addNoteHandler: State = this.createState("addNoteHandler", (todoId: any) => {
+    console.log(todoId);
+    return;
+    throw new Error("Implement addTodoHandler");
+  });
+  editNoteHandler: State = this.createState("editNoteHandler", (id: any) => {
     console.log(id);
     return;
     throw new Error("Implement addTodoHandler");
   });
-
-  notes: State = this.createState("notes", [], true);
+  deleteNoteHandler: State = this.createState("deleteNoteHandler", (id: any) => {
+    console.log(id);
+    return;
+    throw new Error("Implement addTodoHandler");
+  });
   num1: State = this.createState("num1", 0, true);
   num2: State = this.createState("num2", 0, true);
 }

@@ -37,6 +37,7 @@ export class Icon extends Component {
   }
 
   center() {
+    return;
     this._intervalId = setInterval(
       () => {
         if (!this.node.isConnected) return;

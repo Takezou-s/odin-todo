@@ -13,10 +13,14 @@ import { Note } from "../Entity/Note";
 import { ComponentFromString } from "./Core/ComponentFromString";
 import { Component } from "./Core/Component";
 import { NoteItem } from "./Note";
+import { State } from "../Utility/State";
+import { TodoStatus } from "../Entity/TodoStatus";
 
 export class Main extends Container {
   private _lastShown: { show: string; id: any } | null = null;
   private _loading?: Component;
+  private _onlyActiveTodos!: State;
+
   constructor() {
     super({
       nodeType: "main",
@@ -36,12 +40,26 @@ export class Main extends Container {
   }
 
   protected _initStates(): void {
+    super._initStates();
+
+    this._onlyActiveTodos = this._createState("onlyActiveTodos", false);
     this._subscribeStateStore(GlobalStateStore);
+
     this._bindToState(GlobalStateStore.activeTab, ({ getValue }) => {
       this.display(getValue());
     });
 
     this._bindToState(GlobalStateStore.todos, ({ getValueT }) => {
+      this.refresh();
+    });
+
+    this._bindToState(this._onlyActiveTodos, ({ getValueT }) => {
+      if (this._lastShown && this._lastShown.show === "Project") {
+        this.refresh();
+      }
+    });
+
+    this._bindToState(GlobalStateStore.notes, ({ getValueT }) => {
       this.refresh();
     });
   }
@@ -117,7 +135,7 @@ export class Main extends Container {
       empty = this.addTodoElements(todos);
     } else {
       if (notes && notes.length > 0) {
-        empty = false;
+        empty = this.addNoteElements(notes);
       }
     }
 
@@ -165,6 +183,9 @@ export class Main extends Container {
   private addTodoElements(todos: Todo[] | undefined) {
     let empty = true;
     if (todos && todos.length > 0) {
+      if (this._onlyActiveTodos.getValue()) {
+        todos = todos.filter((x) => x.status === TodoStatus.todo);
+      }
       empty = false;
       this.addChildren(
         todos.map<Container>((x) => new Container({ classes: "col-md-6 col-lg-4 col-xxl-3 p-2", children: new TodoItem({ todo: x }) }))
@@ -176,7 +197,7 @@ export class Main extends Container {
   private getProjectNameElement(projectName: string, description: string | undefined, showCreateButton: boolean, id: any) {
     const container = new Container({ classes: "col-12 p-2" });
     const innerContainer = new Container({ classes: "p-2 shadow rounded-3" });
-    const titleContainer = new Container({ classes: "d-flex align-items-center gap-2 py-2" });
+    const titleContainer = new Container({ classes: "d-flex flex-wrap align-items-center gap-2 py-2" });
 
     const title = document.createElement("h3");
     title.className = "text-truncate m-0";
@@ -185,49 +206,59 @@ export class Main extends Container {
 
     titleContainer.addChildren(title);
     if (showCreateButton) {
+      title.style.flexBasis = "100%";
       titleContainer.addChildren(
         new IconButton({
           onClick: () => {
             if (id !== "Notes") {
               GlobalStateStore.addTodoHandler.getValue()(id);
             } else {
-              var q = 5;
+              GlobalStateStore.addNoteHandler.getValue()("Notes");
             }
           },
           icon: icons.mdiPlus,
-          classes: "ms-4",
         })
       );
-
-      titleContainer.addChildren(
-        new IconButton({
-          onClick: () => {
-            if (id !== "Notes") {
+      if (id !== "Notes") {
+        titleContainer.addChildren(
+          new IconButton({
+            onClick: () => {
               GlobalStateStore.editTodoProjectHandler.getValue()(id);
-            } else {
-              var q = 5;
-            }
-          },
-          icon: icons.mdiBookEdit,
-          classes: "btn-success",
-          fontSize: "1.5rem",
-        })
-      );
+            },
+            icon: icons.mdiBookEdit,
+            classes: "btn-success",
+            fontSize: "1.5rem",
+          })
+        );
 
-      titleContainer.addChildren(
-        new IconButton({
-          onClick: () => {
-            if (id !== "Notes") {
+        titleContainer.addChildren(
+          new IconButton({
+            onClick: () => {
               GlobalStateStore.deleteTodoProjectHandler.getValue()(id);
-            } else {
-              var q = 5;
-            }
-          },
-          icon: icons.mdiDelete,
-          classes: "btn-danger",
-          fontSize: "1.5rem",
-        })
-      );
+            },
+            icon: icons.mdiDelete,
+            classes: "btn-danger",
+            fontSize: "1.5rem",
+          })
+        );
+      }
+    }
+    if (id !== "Notes") {
+      const activeTodosCheck = new ComponentFromString({
+        htmlString: `
+      <div class="form-check form-switch fs-4 d-flex align-items-center gap-2 border rounded-3 px-2 py-1">
+        <input class="form-check-input m-0 p-0" type="checkbox" role="switch" id="onlyActiveTodos" ${
+          this._onlyActiveTodos.getValue() ? "checked" : ""
+        }/>
+        <label class="form-check-label m-0 mb-1 p-0" for="onlyActiveTodos">Show only active todos</label>
+      </div>
+      `,
+      });
+      titleContainer.addChildren(new Container({ classes: "flex-grow-1" }));
+      titleContainer.addChildren(activeTodosCheck);
+      activeTodosCheck
+        .render()
+        .addEventListener("change", (event) => this._onlyActiveTodos.setValue((event.target as HTMLInputElement).checked));
     }
     innerContainer.addChildren(titleContainer);
 

@@ -24,7 +24,6 @@ export class TodoItem extends Component {
   private _dateIcon!: Icon;
   private _dateText!: HTMLElement;
   private _buttonContainer!: Container;
-  private _detailsButton!: HTMLElement;
   private _setStatusContainer!: Container;
   private _droppedButton!: HTMLElement;
   private _doneButton!: HTMLElement;
@@ -136,6 +135,13 @@ export class TodoItem extends Component {
     };
 
     this._setStatusContainer = new Container({ classes: "row m-0 p-0" });
+    if (this.props.todo) {
+      const todo = this.props.todo as Todo;
+      if (todo.status !== TodoStatus.todo) {
+        this._setStatusContainer.addClass("d-none");
+      }
+    }
+
     this._droppedButton = document.createElement("button");
     this._droppedButton.className = "btn btn-danger m-0 col-6 rounded-0";
     this._droppedButton.textContent = "Dropped";

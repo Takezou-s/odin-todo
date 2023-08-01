@@ -253,11 +253,11 @@ export abstract class Component {
    * Renders component and returns node.
    * @returns Node to append to document.
    */
-  render = () => {
+  render() {
     this._reflectToElements();
     this._update = true;
     return this.node;
-  };
+  }
   /**
    * Returns prop value.
    * @param propName Prop name.

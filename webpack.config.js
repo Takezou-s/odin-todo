@@ -4,7 +4,6 @@ const autoprefixer = require("autoprefixer");
 const miniCssExtractPlugin = require("mini-css-extract-plugin");
 
 module.exports = {
-  watch: true,
   target: "web",
   mode: "development",
   entry: ["./src/ts/index.ts", "webpack-dev-server/client?http://localhost:3000", "webpack/hot/only-dev-server"],
